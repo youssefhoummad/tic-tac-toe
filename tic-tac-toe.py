@@ -89,13 +89,16 @@ tour.set("Démarrez lz jeu ou sélectionnez un joueur.")
 # TOP
 topFrame = Frame(root, bg='#FAFAFA', height=130)
 
-Xlabel = Label(topFrame, bg='white', textvariable=Xwins, width=20, font=18)
-Xlabel.grid(row=1, column=1, ipady=5, ipadx=5, padx=10, pady=10)
 
-Olabel = Label(topFrame, bg='white', textvariable=Owins, width=20, font=18)
-Olabel.grid(row=1, column=2,  ipady=5, ipadx=5, padx=10, pady=10)
+PlayersFrame = Frame(topFrame, bg='#FAFAFA')
+Xlabel = Label(PlayersFrame, bg='white', textvariable=Xwins, width=20, font=18)
+Xlabel.pack(ipady=5, ipadx=5, padx=10, pady=10, side=LEFT)
 
-Label(topFrame, textvariable=tour, bg='#FAFAFA', fg="#777777").grid(row=2, column=0, columnspan=4, ipady=10)
+Olabel = Label(PlayersFrame, bg='white', textvariable=Owins, width=20, font=18)
+Olabel.pack(ipady=5, ipadx=5, padx=10, pady=10, side=RIGHT)
+PlayersFrame.pack()
+
+Label(topFrame, textvariable=tour, bg='#FAFAFA', fg="#777777").pack(ipady=10)
 
 topFrame.pack(side=TOP, padx=0, pady=0, fill=BOTH, expand=1)
 
