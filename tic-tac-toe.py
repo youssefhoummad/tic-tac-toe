@@ -113,7 +113,7 @@ CanvasFrame.pack(padx=0, pady=0, fill=BOTH)
 # BOTTOM
 ButtomFrame = Frame(root, bg='#FAFAFA', height=40)
 
-Button(ButtomFrame, text='REJOUER', bg='#FAFAFA', fg='#00BFA5', font=('Ariel', 11, 'bold'), command=NouvellePartie).pack(fill=BOTH, expand=1, ipady=10)
+Button(ButtomFrame, text='REJOUER', bg='#FAFAFA', fg='#00BFA5', font=('Ariel', 11, 'bold'), relief=RAISED, bd=0, command=NouvellePartie).pack(fill=BOTH, expand=1, ipady=10)
 
 ButtomFrame.pack(side=BOTTOM, padx=0, pady=0, fill=BOTH, expand=1)
 
