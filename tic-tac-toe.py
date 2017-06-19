@@ -21,6 +21,8 @@ HEIGHT = 228
 
 R = 40          # O and X rayon
 
+WINNER = None
+
 
 
 class iLabel(tk.Frame):
@@ -92,7 +94,7 @@ class iCanvas(tk.Canvas):
 
     def create_cercle(self, x, y):
         "create cercle with animation"
-        xy = x, y, x+R, y+R
+        xy = x, y-5, x+R, y+R+5
         for s in range(0, 361, 10):
             self.create_arc(xy, start=90, extent=s, outline=OC, style=tk.ARC, width=4)
             self.update()
@@ -109,9 +111,40 @@ class iCanvas(tk.Canvas):
         self.create_line(x+R, y, x, y+R, fill=XC, width=4)
 
     def create_trace(self, x1, y1, x2, y2, winner):
-        "line"
+        "line dahed"
         color = OC if winner == 'O' else XC
-        self.create_line(x1, y1, x2, y2, width=4, fill=color)
+        xy = x1 * 76 + R, y1 * 76 + R, x2 * 76 + R, y2 * 76 + R
+        self.create_line(xy, width=4, fill=color, dash=(2, 4))
+    
+    def board_X(self):
+        "when X win popup this board"
+        self.delete(tk.ALL)
+        self.create_line(70, 60, 158, 168, fill=XC, width=10)
+        self.create_line(158, 60, 70, 168, fill=XC, width=10)
+        self.update()
+        self.after(50)
+        self.create_text(114, 210, text="WINNER!", fill=XC, font=('Trebuchet MS', 20, 'bold'))
+
+    def board_O(self):
+        "when O win popup this board"
+        self.delete(tk.ALL)
+        xy = 70, 60, 158, 168
+        self.create_oval(xy, outline=OC, width=10)
+        self.update()
+        self.after(50)
+        self.create_text(114, 210, text="WINNER!", fill=XC, font=('Trebuchet MS', 20, 'bold'))
+
+    def board_XO(self):
+        "when X & O drew popup this board"
+        self.delete(tk.ALL)
+        self.create_line(50, 60, 118, 158, fill=XC, width=10)
+        self.create_line(118, 50, 60, 158, fill=XC, width=10)
+        xy = 120, 60, 188, 158
+        self.create_oval(xy, outline=OC, width=10)
+        self.update()
+        self.after(50)
+        self.create_text(114, 210, text="DRAW!", fill=XC, font=('Trebuchet MS', 20, 'bold'))
+
 
 #
 class iButton(tk.Button):
@@ -161,7 +194,7 @@ class Game(tk.Tk):
         frame.pack(fill=tk.BOTH)
         # footer frame
         footer = tk.Frame(self, bg=RB, height=HEIGHT)
-        iButton(footer, text='REPLAY', command=self.start).pack(fill=tk.BOTH, expand=1, ipady=10)
+        iButton(footer, text='RESTART GAME', command=self.start).pack(fill=tk.BOTH, expand=1, ipady=10)
         footer.pack(side=tk.BOTTOM, padx=0, pady=0, fill=tk.BOTH, expand=1)
 
     def initials(self):
@@ -189,7 +222,7 @@ class Game(tk.Tk):
         col = 3 * event.x // WIDTH
 
         # If the cell is checked previously do nothing
-        if self.CELLS[row][col] != 0:
+        if self.CELLS[row][col] != 0 or self.WINNER:
             return
 
         # find coords cell to draw
@@ -209,14 +242,17 @@ class Game(tk.Tk):
         self.MOVE += 1
         self.verifier()
         # toggle player
-        self.PLAYER = 'O' if self.PLAYER == 'X' else 'X'
+        self.PLAYER = 'X' if self.PLAYER == 'O' else 'O'
 
     def verifier(self):
         "verifier"
-
-        if self.is_winner():
-            showinfo("Win", "{} win!".format(self.PLAYER))
-            if self.PLAYER == 'X':
+        self.WINNER, x1, y1, x2, y2 = self.is_winner()
+        if self.WINNER:
+            self.canvas.create_trace(x1, y1, x2, y2, self.WINNER)
+            self.canvas.update()
+            self.canvas.after(500)
+            self.showinfo()
+            if self.WINNER == 'X':
                 try:
                     self.wins_X.set(str(int(self.wins_X.get())+1))
                 except ValueError:
@@ -226,53 +262,48 @@ class Game(tk.Tk):
                     self.wins_O.set(str(int(self.wins_O.get())+1))
                 except ValueError:
                     self.wins_O.set('1')
-            self.start()
 
         if self.MOVE == 9:
-            showinfo("Drew", "Drew Drew!")
-            self.start()
-
-
+            self.showinfo()
 
     def is_winner(self):
         "all case"
         if self.MOVE < 5:
-            return False
+            return None, None, None, None, None
         # horizontal
-        for row in self.CELLS:
-            if row[0] == row[1] == row[2] != 0:
-                # self.WINNER = row[0]
-                return True
-
+        if self.CELLS[0][0] == self.CELLS[0][1] == self.CELLS[0][2] != 0:
+            return self.PLAYER, 0, 0, 2, 0
+        if self.CELLS[1][0] == self.CELLS[1][1] == self.CELLS[1][2] != 0:
+            return self.PLAYER, 0, 1, 2, 1
+        if self.CELLS[2][0] == self.CELLS[2][1] == self.CELLS[2][2] != 0:
+            return self.PLAYER, 0, 2, 2, 2
         # vertival
         if self.CELLS[0][0] == self.CELLS[1][0] == self.CELLS[2][0] != 0:
-            # self.WINNER = self.CELLS[0][0]
-            return True
+            return self.PLAYER, 0, 0, 0, 2
         elif self.CELLS[0][1] == self.CELLS[1][1] == self.CELLS[2][1] != 0:
-            # self.WINNER = self.CELLS[0][1]
-            return True
+            return self.PLAYER, 1, 0, 1, 2
         elif self.CELLS[0][2] == self.CELLS[1][2] == self.CELLS[2][2] != 0:
-            # self.WINNER = self.CELLS[0][2]
-            return True
+            return self.PLAYER, 2, 0, 2, 2
         # diagonal
         elif self.CELLS[0][0] == self.CELLS[1][1] == self.CELLS[2][2] != 0:
-            # self.WINNER = self.CELLS[0][0]
-            return True
+            return self.PLAYER, 2, 2, 0, 0
         elif self.CELLS[0][2] == self.CELLS[1][1] == self.CELLS[2][0] != 0:
-            # self.WINNER = self.CELLS[0][2]
-            return True
-        
-        # return self.WINNER
-        return False
+            return self.PLAYER, 2, 0, 0, 2
+
+        return None, None, None, None, None
+
+    def showinfo(self):
+        "POPUP MESSAGE"
+        if self.WINNER == 'X':
+            self.canvas.board_X()
+        elif self.WINNER == 'O':
+            self.canvas.board_O()
+        else:
+            self.canvas.board_XO()
 
 
-#
 
-# TO DO ...
-# change showinfo with a nice canvas
+# 
 
 
 if __name__ == '__main__':
-    game = Game()
-
-    game.mainloop()
