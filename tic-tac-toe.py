@@ -1,7 +1,6 @@
 "Tic Toc Toe Game powerd by tkinter and python"
 
 import tkinter as tk
-from tkinter.messagebox import showinfo
 
 # COLORs
 CB = '#00BFA5'  # canvas background
@@ -21,7 +20,6 @@ HEIGHT = 228
 
 R = 40          # O and X rayon
 
-WINNER = None
 
 
 
